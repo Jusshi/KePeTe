@@ -7,6 +7,18 @@
 #include "Toggleable.h"
 #include "SurveillanceCamera.generated.h"
 
+UENUM( BlueprintType )
+enum class CameraState : uint8 {
+	kSeeking   UMETA(DisplayName="Camera is seeking player"),
+	kAnalyzing   UMETA(DisplayName = "Camera has detected player and is still analyzing"),
+	kAlarm   UMETA(DisplayName = "Camera has detected illegal action and will raise alarm soon"),
+	kNumStates   UMETA(DisplayName = "Total number of different camera states")
+};
+
+const float DEFAULT_ANALYZE_TIME_IN_SECONDS = 5.0f;
+const float DEFAULT_ALARMS_TIME_IN_SECONDS = 2.0f;
+
+
 UCLASS()
 class ESCAPEINSPACE_API ASurveillanceCamera : public AToggleable
 {
@@ -42,13 +54,19 @@ public:
   bool isActive;
   
   UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Camera Settings")
-  float TimeToRaiseAlarmFromDetection;
+  float AnalyzeTimeSeconds;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera Settings")
+  float alarmTimeSeconds;
   
-  float passedTimeSinceDetection;
+  float passedTimeSinceStateChange;
   
+  CameraState state;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	void SeekOperation(float DeltaTime);
+	void LookAtPlayer();
 
 public:	
 	// Called every frame
@@ -66,13 +84,19 @@ public:
 	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Surveillance Camera")
 	//void OnEnable();
 	
-  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Surveillance Camera")
-  void OnRaiseAlarm();
+	UFUNCTION(BlueprintCallable, Category = "Surveillance Camera")
+	void setCameraState(CameraState newState);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="Surveillance Camera")
+	void OnRaiseAlarm();
   
-  UFUNCTION(BlueprintCallable, Category="Surveillance Camera")
-  void SetDetectedPlayer(AActor *player);
-  UFUNCTION(BlueprintCallable, Category="Surveillance Camera")
-  bool IsPlayerDetected();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Surveillance Camera")
+	void OnStateChange(CameraState newState);
+
+	UFUNCTION(BlueprintCallable, Category="Surveillance Camera")
+	void SetDetectedPlayer(AActor *player);
+	UFUNCTION(BlueprintCallable, Category="Surveillance Camera")
+	bool IsPlayerDetected();
   
  
 };
