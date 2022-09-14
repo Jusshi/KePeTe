@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-//33min kohalla video!!!!!
 #include "SurveillanceCamera.h"
 
 // Sets default values
